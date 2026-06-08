@@ -1,0 +1,25 @@
+# Swift build artifacts
+.build/
+*.o
+*.d
+
+# Generated app bundle and DMG (distributed via GitHub Releases, not committed)
+*.app
+*.dmg
+
+# Generated iconset (AppIcon.icns is committed; iconset is reproducible from the png)
+AppIcon.iconset/
+
+# Raw audio recordings (source files, not the shipped asset)
+recording-*.wav
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
