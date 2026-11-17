@@ -104,7 +104,7 @@ private struct PreferencesView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 7) {
                     Text("QuickOCR")
                         .font(.system(size: 18, weight: .semibold))
-                    Text("v1.0")
+                    Text("v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?")")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.tertiary)
                         .padding(.horizontal, 6)
