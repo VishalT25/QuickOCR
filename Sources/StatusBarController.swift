@@ -143,7 +143,7 @@ final class StatusBarController {
     private func runCapture() async {
         let btn = item.button
 
-        try? await Task.sleep(for: .milliseconds(500))
+        try? await Task.sleep(for: .milliseconds(150))
 
         guard let path = await CaptureManager.shared.captureRegion() else { return }
 

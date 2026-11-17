@@ -4,7 +4,7 @@ set -euo pipefail
 
 APP_NAME="QuickOCR"
 BUNDLE_ID="com.vishalt25.quickocr"
-VERSION="1.0"
+VERSION="1.1"
 BUILD_DIR="$(pwd)/.build/release"
 APP_BUNDLE="$(pwd)/$APP_NAME.app"
 DMG_OUT="$(pwd)/$APP_NAME.dmg"
@@ -67,8 +67,11 @@ echo "  ✓ Bundle assembled"
 
 # ── 3. Ad-hoc code sign ───────────────────────────────────────────────────────
 echo ""
-echo "  Signing (ad-hoc)…"
-codesign --deep --force --sign - "$APP_BUNDLE"
+# Set SIGN_IDENTITY to a stable certificate (e.g. "Apple Development: Your Name (TEAMID)")
+# so macOS privacy grants (Screen Recording) survive rebuilds. Defaults to ad-hoc.
+SIGN_IDENTITY="${SIGN_IDENTITY:--}"
+echo "  Signing (${SIGN_IDENTITY/#-/ad-hoc})…"
+codesign --deep --force --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
 echo "  ✓ Signed"
 
 # ── 4. Create DMG ─────────────────────────────────────────────────────────────

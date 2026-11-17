@@ -318,6 +318,7 @@ private struct PreferencesView: View {
         isRecording = false
         heldMods = []
         PreferencesManager.shared.shortcut = sc
+        HotkeyManager.shared.reload()
     }
 
     private func modParts(for flags: NSEvent.ModifierFlags) -> [String] {
