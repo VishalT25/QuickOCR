@@ -42,7 +42,7 @@ Press **⌘⇧1**, drag a region, and the text is copied to your clipboard insta
 4. On first capture, grant **Screen Recording** access when prompted
    *(System Settings → Privacy & Security → Screen & System Audio Recording)*
 
-> **Gatekeeper note:** Because the app is ad-hoc signed (not notarised), macOS may warn you on first open. Right-click → Open to proceed.
+> QuickOCR is signed with a Developer ID certificate and notarized by Apple, so it opens without Gatekeeper warnings.
 
 ### Option B — Build from source
 
@@ -59,6 +59,12 @@ bash package.sh
 ```
 
 This produces `QuickOCR.app` and `QuickOCR.dmg` in the project directory. Drag the app to `/Applications`.
+
+Local builds are ad-hoc signed, so macOS may show a Gatekeeper warning (System Settings → Privacy & Security → **Open Anyway**). To sign and notarize with your own Apple Developer account:
+
+```bash
+SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" NOTARY_PROFILE=your-profile bash package.sh
+```
 
 ## Usage
 

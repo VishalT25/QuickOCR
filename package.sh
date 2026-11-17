@@ -67,12 +67,34 @@ echo "  ✓ Bundle assembled"
 
 # ── 3. Ad-hoc code sign ───────────────────────────────────────────────────────
 echo ""
-# Set SIGN_IDENTITY to a stable certificate (e.g. "Apple Development: Your Name (TEAMID)")
-# so macOS privacy grants (Screen Recording) survive rebuilds. Defaults to ad-hoc.
+# SIGN_IDENTITY: certificate to sign with, e.g. "Developer ID Application: Your Name (TEAMID)".
+#   Defaults to ad-hoc ("-"), which works locally but triggers Gatekeeper warnings elsewhere.
+# NOTARY_PROFILE: notarytool keychain profile (xcrun notarytool store-credentials <name> ...).
+#   When set together with a Developer ID identity, the app and DMG are notarized and stapled.
 SIGN_IDENTITY="${SIGN_IDENTITY:--}"
+NOTARY_PROFILE="${NOTARY_PROFILE:-}"
 echo "  Signing (${SIGN_IDENTITY/#-/ad-hoc})…"
-codesign --deep --force --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
+if [ "$SIGN_IDENTITY" = "-" ]; then
+    codesign --deep --force --sign - "$APP_BUNDLE"
+else
+    codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
+fi
+codesign --verify --strict --verbose=1 "$APP_BUNDLE"
 echo "  ✓ Signed"
+
+notarize() {  # $1 = file to submit (zip or dmg)
+    xcrun notarytool submit "$1" --keychain-profile "$NOTARY_PROFILE" --wait
+}
+
+if [ -n "$NOTARY_PROFILE" ] && [ "$SIGN_IDENTITY" != "-" ]; then
+    echo ""
+    echo "  Notarizing app…"
+    ZIP="$(mktemp -d)/$APP_NAME.zip"
+    ditto -c -k --keepParent "$APP_BUNDLE" "$ZIP"
+    notarize "$ZIP"
+    xcrun stapler staple "$APP_BUNDLE"
+    echo "  ✓ App notarized and stapled"
+fi
 
 # ── 4. Create DMG ─────────────────────────────────────────────────────────────
 echo ""
@@ -98,6 +120,15 @@ hdiutil create \
 
 rm -rf "$STAGING"
 
+if [ "$SIGN_IDENTITY" != "-" ]; then
+    codesign --force --timestamp --sign "$SIGN_IDENTITY" "$DMG_OUT"
+fi
+if [ -n "$NOTARY_PROFILE" ] && [ "$SIGN_IDENTITY" != "-" ]; then
+    echo "  Notarizing DMG…"
+    notarize "$DMG_OUT"
+    xcrun stapler staple "$DMG_OUT"
+fi
+
 echo "  ✓ DMG created"
 
 # ── Done ──────────────────────────────────────────────────────────────────────
@@ -108,7 +139,7 @@ echo "  │                                                         │"
 echo "  │  App:  $APP_BUNDLE"
 echo "  │  DMG:  $DMG_OUT"
 echo "  │                                                         │"
-echo "  │  Note: on first launch, grant Accessibility access in   │"
-echo "  │  System Settings → Privacy & Security → Accessibility.  │"
+echo "  │  On first capture, grant Screen Recording access in     │"
+echo "  │  System Settings → Privacy & Security.                  │"
 echo "  └─────────────────────────────────────────────────────────┘"
 echo ""
