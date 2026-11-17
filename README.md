@@ -28,6 +28,7 @@ Press **⌘⇧1**, drag a region, and the text is copied to your clipboard insta
 
 - **Works on macOS 27** — Vision's `.accurate` text recognition hangs on macOS 27, so QuickOCR now uses `.fast` recognition (also much quicker; slightly less accurate on very small or stylised text)
 - **Shortcut no longer needs Accessibility permission** — uses a system hotkey instead of a global key monitor, so it survives macOS updates
+- **Update notice** — the menu shows "Update Available" when a newer release exists, plus a "Check for Updates…" item
 - **Faster crosshair** — capture starts after 150 ms instead of 500 ms
 - Packaging supports a stable signing identity (`SIGN_IDENTITY`) so Screen Recording permission survives rebuilds
 
@@ -75,7 +76,7 @@ All processing happens locally on your Mac:
 
 - Screenshots are written to a temp file, OCR'd, then **immediately deleted**
 - History is stored in `UserDefaults` on your device only
-- No network requests are made anywhere in the codebase
+- The only network request is an optional once-a-day check of GitHub's public releases page to see if a newer version exists (`UpdateChecker.swift`). It sends no personal data and no captured text.
 
 You can verify this yourself — the entire codebase is in [`Sources/`](Sources/).
 

@@ -5,7 +5,7 @@ import CoreGraphics
 // MARK: – Steps
 
 private enum OnboardStep: Int, CaseIterable {
-    case welcome, accessibility, screenRecording, shortcut, tryItOut, done
+    case welcome, screenRecording, shortcut, tryItOut, done
 }
 
 // MARK: – Window Controller
@@ -78,7 +78,6 @@ private struct OnboardFlow: View {
     @ViewBuilder private var stepView: some View {
         switch step {
         case .welcome:        WelcomeStep(onNext: next)
-        case .accessibility:  AccessStep(onNext: next, onBack: back)
         case .screenRecording: ScreenStep(onNext: next, onBack: back)
         case .shortcut:       ShortcutStep(onNext: next, onBack: back)
         case .tryItOut:       TryStep(onNext: next, onBack: back)
@@ -99,10 +98,10 @@ private struct OnboardFlow: View {
 // MARK: – Shared components
 
 private struct ProgressDots: View {
-    let current: Int   // 0-based within the 4 middle steps
+    let current: Int   // 0-based within the 3 middle steps
     var body: some View {
         HStack(spacing: 7) {
-            ForEach(0..<4) { i in
+            ForEach(0..<3) { i in
                 Capsule()
                     .fill(i == current ? Color.accentColor : Color.secondary.opacity(0.22))
                     .frame(width: i == current ? 22 : 7, height: 7)
@@ -215,30 +214,6 @@ private struct WelcomeStep: View {
     }
 }
 
-// MARK: – Accessibility
-
-private struct AccessStep: View {
-    let onNext: () -> Void
-    let onBack: () -> Void
-    @State private var granted = AXIsProcessTrusted()
-    private let timer = Timer.publish(every: 0.8, on: .main, in: .common).autoconnect()
-
-    var body: some View {
-        PermLayout(
-            dotIndex: 0,
-            icon: "accessibility",
-            iconColor: .blue,
-            title: "Accessibility Access",
-            subtitle: "QuickOCR needs Accessibility permission to detect your global shortcut from any app, even when QuickOCR isn't focused.",
-            granted: granted,
-            settingsURLString: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
-            onNext: onNext,
-            onBack: onBack
-        )
-        .onReceive(timer) { _ in granted = AXIsProcessTrusted() }
-    }
-}
-
 // MARK: – Screen Recording
 
 private struct ScreenStep: View {
@@ -249,7 +224,7 @@ private struct ScreenStep: View {
 
     var body: some View {
         PermLayout(
-            dotIndex: 1,
+            dotIndex: 0,
             icon: "camera.fill",
             iconColor: .purple,
             title: "Screen Recording",
@@ -341,7 +316,7 @@ private struct ShortcutStep: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ProgressDots(current: 2).padding(.top, 32)
+            ProgressDots(current: 1).padding(.top, 32)
 
             Image(systemName: "keyboard")
                 .font(.system(size: 52, weight: .light))
@@ -420,7 +395,7 @@ private struct TryStep: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ProgressDots(current: 3).padding(.top, 32)
+            ProgressDots(current: 2).padding(.top, 32)
 
             Image(systemName: captured ? "checkmark.circle.fill" : "cursorarrow.rays")
                 .font(.system(size: 52))

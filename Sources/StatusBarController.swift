@@ -11,6 +11,9 @@ final class StatusBarController {
         HotkeyManager.shared.onTrigger = { [weak self] in self?.triggerCapture() }
         HotkeyManager.shared.start()
 
+        UpdateChecker.shared.onChange = { [weak self] in self?.refreshUpdateItem() }
+        UpdateChecker.shared.checkIfDue()
+
         // Keep the history menu in sync whenever HistoryManager mutates
         HistoryManager.shared.onChanged = { [weak self] in
             DispatchQueue.main.async { self?.refreshHistoryMenu() }
@@ -47,6 +50,10 @@ final class StatusBarController {
         menu.addItem(prefsItem)
 
         menu.addItem(.separator())
+
+        let updateItem = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
+        updateItem.target = self
+        menu.addItem(updateItem)
 
         let quitItem = NSMenuItem(title: "Quit QuickOCR", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quitItem)
@@ -122,6 +129,20 @@ final class StatusBarController {
 
     @objc private func clearHistory() {
         HistoryManager.shared.clear()
+    }
+
+    @objc private func checkForUpdates() {
+        if let u = UpdateChecker.shared.available { NSWorkspace.shared.open(u.url); return }
+        Task { await UpdateChecker.shared.check(userInitiated: true) }
+    }
+
+    private func refreshUpdateItem() {
+        guard let mi = item.menu?.items.first(where: { $0.action == #selector(checkForUpdates) }) else { return }
+        if let u = UpdateChecker.shared.available {
+            mi.title = "Update Available — v\(u.version)"
+        } else {
+            mi.title = "Check for Updates…"
+        }
     }
 
     @objc private func openHistory() {
